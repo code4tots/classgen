@@ -1,0 +1,124 @@
+class Main
+includes string / fstream iostream string vector Tree.hpp algorithm cctype
+members
+methods
+
+std::string process(std::string s)
+  std::string r;
+  std::transform(s.begin(),s.end(),s.begin(), ::tolower);
+  for(unsigned int i = 0; i < s.size(); i++) {
+    if (isalpha(s[i]))
+      r += s[i];
+  }
+  return r;
+  
+int run(int argc, char** argv)
+  // Initialize
+  std::ifstream fin(argv[1]);
+  Tree tree;
+  std::string buf;
+  std::vector<std::string> v;
+  std::vector<int> count;
+  
+  // Read input
+  while (true) {
+    fin >> buf;
+    if (fin.eof()) break;
+    if (process(buf).size() < 4) continue;
+    if (process(buf) != "")
+      tree.insert(process(buf));
+  }
+  fin.close();
+  
+  // sort
+  tree.out(v,count);
+  
+  // print results
+  for (unsigned int i = 0; i < v.size(); i++) {
+    std::cout << v[i];
+    if (count[i] != 1)
+      std::cout << " (" << count[i] << ')';
+    std::cout << std::endl;
+  }
+  return 0;
+
+class Node
+includes iostream string vector /
+members
+  std::string / k
+  Node / *p *l *r
+  int / c
+methods
+
+$$(const std::string& k, Node *p)
+  // k --> key
+  // p --> parent
+  // l --> left child
+  // r --> right child
+  // c --> count (how many copies of the key this node represents)
+  this->k = k;
+  this->p = p;
+  l = r = NULL;
+  c = 1;
+  
+~$$()
+  delete l;
+  delete r;
+  
+const std::string& key() const
+  return k;
+  
+const Node *parent() const
+  return p;
+  
+const Node *left() const
+  return l;
+  
+const Node *right() const
+  return r;
+  
+void insert(const std::string& s)
+  int cmp = s.compare(k);
+  if (cmp == 0) c++;
+  else if (cmp < 0) {
+    if (l == NULL) l = new Node(s,this);
+    else           l->insert(s);
+  }
+  else if (cmp > 0) {
+    if (r == NULL) r = new Node(s,this);
+    else           r->insert(s);
+  }
+  
+void out(std::vector<std::string>& v, std::vector<int>& count) const
+  if (l != NULL) l->out(v,count);
+  v.push_back(k);
+  count.push_back(c);
+  if (r != NULL) r->out(v,count);
+  
+std::ostream& out(std::ostream& ou) const
+  if (l != NULL) l->out(ou), ou << ' ';
+  ou << k;
+  if (r != NULL) ou << ' ', r->out(ou);
+  return ou;
+  
+class Tree
+includes Node.hpp iostream string vector /
+members
+  Node / *r
+
+methods
+$$()
+  r = NULL;
+~$$()
+  delete r;
+void insert(const std::string& s)
+  if (r == NULL) r = new Node(s,NULL);
+  else           r->insert(s);
+  
+std::ostream& out(std::ostream& ou) const
+  if (r) r->out(ou);
+  return ou;
+  
+void out(std::vector<std::string>& v, std::vector<int>& c) const
+  r->out(v,c);
+  
